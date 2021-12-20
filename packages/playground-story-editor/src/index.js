@@ -17,7 +17,7 @@
 /**
  * External dependencies
  */
-import { render, useMemo } from '@web-stories-wp/react';
+import { useMemo } from '@web-stories-wp/react';
 import StoryEditor from '@web-stories-wp/story-editor';
 import { DATA_VERSION } from '@web-stories-wp/migration';
 import styled from 'styled-components';
@@ -26,7 +26,6 @@ import styled from 'styled-components';
  * Internal dependencies
  */
 
-import registerServiceWorker from './serviceWorkerRegistration';
 import Layout from './components/layout';
 import { defaultStory } from './consts';
 import MediaUpload from './components/MediaUpload';
@@ -147,13 +146,3 @@ export const Playground = () => {
     </AppContainer>
   );
 };
-
-const initEditor = () => {};
-render(<Playground />, document.getElementById('playground-root'));
-
-if ('loading' === document.readyState) {
-  document.addEventListener('DOMContentLoaded', initEditor);
-  registerServiceWorker();
-} else {
-  initEditor();
-}

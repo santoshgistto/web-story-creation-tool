@@ -19,8 +19,15 @@
  */
 
 const path = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WebpackBar = require('webpackbar');
 
-module.exports = {
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+const mode = isProduction ? 'production' : 'development';
+
+const electronMainConfig = {
   resolve: {
     extensions: ['.js'],
   },
@@ -38,8 +45,136 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new WebpackBar({
+      name: 'electron-main',
+    }),
+  ],
   output: {
     path: path.resolve(__dirname, './build/electron/main'),
     filename: '[name].cjs',
   },
+  watch: mode === 'development',
 };
+
+const electronRendererConfig = {
+  entry: './packages/electron-story-editor/app.js',
+  target: 'electron-renderer',
+  devtool: 'source-map',
+  module: {
+    rules: [
+      !isProduction
+        ? {
+            test: /\.js$/,
+            use: ['source-map-loader'],
+            enforce: 'pre',
+          }
+        : {},
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
+          require.resolve('thread-loader'),
+          {
+            loader: require.resolve('babel-loader'),
+            options: {
+              // Babel uses a directory within local node_modules
+              // by default. Use the environment variable option
+              // to enable more persistent caching.
+              cacheDirectory: process.env.BABEL_CACHE_DIRECTORY || true,
+            },
+          },
+        ],
+      },
+      // These should be sync'd with the config in `.storybook/main.cjs`.
+      {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              titleProp: true,
+              svgo: true,
+              memo: true,
+              svgoConfig: {
+                plugins: [
+                  {
+                    removeViewBox: false,
+                    removeDimensions: true,
+                    convertColors: {
+                      currentColor: /^(?!url|none)/i,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+          'url-loader',
+        ],
+        exclude: [/images\/.*\.svg$/],
+      },
+      {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              titleProp: true,
+              svgo: true,
+              memo: true,
+              svgoConfig: {
+                plugins: [
+                  {
+                    removeViewBox: false,
+                    removeDimensions: true,
+                    convertColors: {
+                      // See https://github.com/google/web-stories-wp/pull/6361
+                      currentColor: false,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+          'url-loader',
+        ],
+        include: [/images\/.*\.svg$/],
+      },
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        sideEffects: true,
+      },
+      {
+        test: /\.(png|jpe?g|gif|webp)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              outputPath: '../images',
+            },
+          },
+        ],
+      },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './packages/electron-story-editor/index.html',
+    }),
+    new MiniCssExtractPlugin({
+      filename: './css/[name].css',
+    }),
+    new WebpackBar({
+      name: 'electron-renderer',
+    }),
+  ],
+  output: {
+    path: path.resolve(__dirname, './build/electron/renderer'),
+    filename: 'js/[name].js',
+    publicPath: './',
+  },
+  watch: mode === 'development',
+};
+
+module.exports = [electronMainConfig, electronRendererConfig];

@@ -20,4 +20,4 @@
 import { render } from '@web-stories-wp/react';
 import { Playground } from '@web-stories-wp/playground-story-editor';
 
-render(<Playground />, document.body);
+render(<Playground />, document.getElementById('electron-editor-root'));
