@@ -138,7 +138,7 @@ const CoreEditor = () => {
   );
 };
 
-const Playground = () => {
+export const Playground = () => {
   return (
     <AppContainer>
       <MediaProvider>

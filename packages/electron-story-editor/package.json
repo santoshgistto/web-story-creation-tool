@@ -1,0 +1,23 @@
+{
+  "name": "@web-stories-wp/electron-story-editor",
+  "private": true,
+  "engines": {
+    "node": ">= 16",
+    "npm": ">= 7.3"
+  },
+  "exports": {
+    "default": "./src/index.js"
+  },
+  "main": "./dist/main/main.js",
+  "dependencies": {
+    "@web-stories-wp/playground-story-editor": "*",
+    "@web-stories-wp/react": "*",
+    "electron": "^16.0.4"
+  },
+  "devDependencies": {
+    
+  },
+  "scripts": {
+    
+  }
+}
